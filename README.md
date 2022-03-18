@@ -1,2 +1,4 @@
-# My-Best-Book
-オススメしたい本を本棚に追加していくアプリです。
+## install
+***
+### Next.js -TypeScript
+`yarn create next-app --typescript`
