@@ -18,10 +18,13 @@ export const Header: VFC<Props> = ({ title, children }) => {
       <div className="flex justify-center text-white bg-primary-blue">
         <div className="flex justify-between items-center w-3/4 h-20">
           <Link href="/home">
-            <a className="text-3xl cursor-pointer">My book best</a>
+            <a className="text-3xl cursor-pointer">My best book</a>
           </Link>
           <Link href="/login">
             <a className="text-3xl cursor-pointer">LogIn</a>
+          </Link>
+          <Link href="/signup">
+            <a className="text-3xl cursor-pointer">SignUp</a>
           </Link>
 
           {/* {user ? (
