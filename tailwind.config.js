@@ -5,6 +5,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'yusei': ['Yusei Magic'],
+      },
       colors: {
         primary:{
           "blue": "#164E63",
