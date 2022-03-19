@@ -1,4 +1,3 @@
-import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -9,10 +8,15 @@ import Link from "@mui/material/Link";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Header } from "../components/layout/Header";
+import { useState } from "react";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, db, provider } from "../firebase/firebaseConfig";
+import { ref } from "firebase/storage";
 
 function Copyright(props: any) {
   return (
@@ -43,6 +47,50 @@ const SignUp = () => {
       password: data.get("password"),
     });
   };
+
+  const [user, setUser] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
+  const [avatarImage, setAvatarImage] = useState<File | null>(null);
+
+
+  const signInEmail = async () => {
+    await signInWithEmailAndPassword(auth, email, password);
+  };
+
+  // const signUpEmail = async () => {
+  //   const authUser = await createUserWithEmailAndPassword(auth, email, password);
+  //   let url = "";
+
+  //   if (avatarImage) {
+  //     const S =
+  //       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  //     const N = 16;
+  //     const randomChar = Array.from(crypto.getRandomValues(new Uint32Array(N)))
+  //       .map((n) => S[n % S.length])
+  //       .join("");
+  //     const fileName = randomChar + "_" + avatarImage.name;
+  //     await storage.ref(`avatars/${fileName}`).put(avatarImage);
+  //     url = await storage.ref("avatars").child(fileName).getDownloadURL();
+  //   }
+
+  //   await authUser.user?.updateProfile({
+  //     displayName: username,
+  //     photoURL: url,
+  //   });
+    
+  //   dispatch(
+  //     updateUserProfile({
+  //       displayName: username,
+  //       photoUrl: url,
+  //     })
+  //   );
+  // };
+
+    const signInGoogle = async () => {
+      await signInWithPopup(auth, provider).catch((err: any) => alert(err.message));
+    };
 
   return (
     <Header>
@@ -105,6 +153,9 @@ const SignUp = () => {
                   name="name"
                   autoComplete="name"
                   autoFocus
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setUser(e.target.value);
+                  }}
                 />
                 <TextField
                   margin="normal"
@@ -115,6 +166,9 @@ const SignUp = () => {
                   name="email"
                   autoComplete="email"
                   autoFocus
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setEmail(e.target.value);
+                  }}
                 />
                 <TextField
                   margin="normal"
@@ -125,6 +179,9 @@ const SignUp = () => {
                   type="password"
                   id="password"
                   autoComplete="current-password"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setPassword(e.target.value);
+                  }}
                 />
                 <FormControlLabel
                   control={<Checkbox value="remember" color="primary" />}
@@ -138,10 +195,11 @@ const SignUp = () => {
                 >
                   Sign In
                 </Button>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
+                <Button 
+                fullWidth 
+                variant="contained" 
+                sx={{ mt: 3, mb: 2 }}
+                onClick={signInGoogle}
                 >
                   Googleで登録
                 </Button>
