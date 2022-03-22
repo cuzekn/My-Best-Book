@@ -1,223 +1,243 @@
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
-import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { Header } from "../components/layout/Header";
 import { useState } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { useForm, useToggle, upperFirst } from "@mantine/hooks";
+import {
+  TextInput,
+  PasswordInput,
+  Text,
+  Paper,
+  Group,
+  PaperProps,
+  Button,
+  Divider,
+  Checkbox,
+  Anchor,
+  Title,
+  createStyles,
+} from "@mantine/core";
+import { Header } from "../components/layout/Header";
 import { auth, db, provider } from "../firebase/firebaseConfig";
-import { ref } from "firebase/storage";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from "firebase/auth";
 
-function Copyright(props: any) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
+import { collection, addDoc } from "firebase/firestore";
 
-const theme = createTheme();
 
-const SignUp = () => {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
-  };
+const useStyles = createStyles((theme) => ({
+  wrapper: {
+    minHeight: "100%",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundImage:
+      "url(https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bGlicmFyeXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60)",
+  },
 
-  const [user, setUser] = useState("");
+  form: {
+    borderRight: `1px solid ${
+      theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.gray[3]
+    }`,
+    minHeight: 900,
+    maxWidth: 450,
+    paddingTop: 80,
+
+    [`@media (max-width: ${theme.breakpoints.sm}px)`]: {
+      maxWidth: "100%",
+    },
+  },
+
+  title: {
+    color: theme.colorScheme === "dark" ? theme.white : theme.black,
+    fontFamily: `Greycliff CF, ${theme.fontFamily}`,
+  },
+
+  logo: {
+    color: theme.colorScheme === "dark" ? theme.white : theme.black,
+    width: 120,
+    display: "block",
+    marginLeft: "auto",
+    marginRight: "auto",
+  },
+}));
+
+const Signup = () => {
+  const { classes } = useStyles();
+  const [type, toggle] = useToggle("LogIn", ["LogIn", "SignUp"]);
+  const form = useForm({
+    initialValues: {
+      email: "",
+      name: "",
+      password: "",
+      terms: true,
+    },
+
+    validationRules: {
+      name: (val) => val.length >= 1,
+      email: (val) => /^\S+@\S+$/.test(val),
+      password: (val) => val.length >= 6,
+    },
+  });
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
-  const [avatarImage, setAvatarImage] = useState<File | null>(null);
-
+  const [input, setInput] = useState("");
 
   const signInEmail = async () => {
     await signInWithEmailAndPassword(auth, email, password);
   };
 
-  // const signUpEmail = async () => {
-  //   const authUser = await createUserWithEmailAndPassword(auth, email, password);
-  //   let url = "";
+  const signUpEmail = async () => {
+    const authUser = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+  };
 
-  //   if (avatarImage) {
-  //     const S =
-  //       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  //     const N = 16;
-  //     const randomChar = Array.from(crypto.getRandomValues(new Uint32Array(N)))
-  //       .map((n) => S[n % S.length])
-  //       .join("");
-  //     const fileName = randomChar + "_" + avatarImage.name;
-  //     await storage.ref(`avatars/${fileName}`).put(avatarImage);
-  //     url = await storage.ref("avatars").child(fileName).getDownloadURL();
-  //   }
-
-  //   await authUser.user?.updateProfile({
-  //     displayName: username,
-  //     photoURL: url,
-  //   });
-    
-  //   dispatch(
-  //     updateUserProfile({
-  //       displayName: username,
-  //       photoUrl: url,
-  //     })
-  //   );
-  // };
-
-    const signInGoogle = async () => {
-      await signInWithPopup(auth, provider).catch((err: any) => alert(err.message));
-    };
+  const signInGoogle = async () => {
+    await signInWithPopup(auth, provider).catch((err: any) =>
+      alert(err.message)
+    );
+  };
 
   return (
     <Header>
-      <ThemeProvider theme={theme}>
-        <Grid container component="main" sx={{ height: "100vh" }}>
-          <CssBaseline />
-          <Grid
-            item
-            xs={false}
-            sm={4}
-            md={7}
-            sx={{
-              backgroundImage:
-                "url(https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bGlicmFyeXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60)",
-              backgroundRepeat: "no-repeat",
-              backgroundColor: (t) =>
-                t.palette.mode === "light"
-                  ? t.palette.grey[50]
-                  : t.palette.grey[900],
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-          <Grid
-            item
-            xs={12}
-            sm={8}
-            md={5}
-            component={Paper}
-            elevation={6}
-            square
+      <div className={classes.wrapper}>
+        <Paper className={classes.form} radius={0} p={30}>
+          <Title
+            order={2}
+            className={classes.title}
+            align="center"
+            mt="sm"
+            mb={50}
           >
-            <Box
-              sx={{
-                my: 8,
-                mx: 4,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
+            {type}
+          </Title>
+
+          <Group grow mb="md" mt="md">
+            <Button
+              className="text-white bg-primary-blue rounded"
+              onClick={signInGoogle}
             >
-              <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-                <LockOutlinedIcon />
-              </Avatar>
-              <Typography component="h1" variant="h5">
-                Sign Up
-              </Typography>
-              <Box
-                component="form"
-                noValidate
-                onSubmit={handleSubmit}
-                sx={{ mt: 1 }}
-              >
-                <TextField
-                  margin="normal"
+              Google
+            </Button>
+            <Button className="text-white bg-primary-blue rounded">
+              Twitter
+            </Button>
+          </Group>
+
+          <Divider
+            label="Or continue with email"
+            labelPosition="center"
+            my="lg"
+          />
+
+          <form
+            onSubmit={form.onSubmit(() => {
+              isLogin
+                ? async () => {
+                    try {
+                      await signInEmail();
+                    } catch (err: any) {
+                      alert(err.message);
+                    }
+                  }
+                : async () => {
+                    try {
+                      await signUpEmail();
+                    } catch (err: any) {
+                      alert(err.message);
+                    }
+                  };
+            })}
+          >
+            <Group direction="column" grow>
+              {type === "SignUp" && (
+                <TextInput
                   required
-                  fullWidth
-                  id="name"
                   label="Name"
-                  name="name"
-                  autoComplete="name"
-                  autoFocus
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setUser(e.target.value);
-                  }}
+                  placeholder="Your name"
+                  value={form.values.name}
+                  onChange={(event) =>
+                    form.setFieldValue("name", event.currentTarget.value)
+                  }
                 />
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
-                  autoFocus
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setEmail(e.target.value);
-                  }}
+              )}
+
+              <TextInput
+                required
+                label="Email"
+                mt="md"
+                size="md"
+                placeholder="hello@mantine.dev"
+                value={form.values.email}
+                onChange={(event) =>
+                  form.setFieldValue("email", event.currentTarget.value)
+                }
+                error={form.errors.email && "Invalid email"}
+              />
+
+              <PasswordInput
+                required
+                label="Password"
+                placeholder="Your password"
+                mt="md"
+                size="md"
+                value={form.values.password}
+                onChange={(event) =>
+                  form.setFieldValue("password", event.currentTarget.value)
+                }
+                error={
+                  form.errors.password &&
+                  "Password should include at least 6 characters"
+                }
+              />
+
+              {type === "SignUp" && (
+                <Checkbox
+                  label="利用規約に同意する"
+                  checked={form.values.terms}
+                  onChange={(event) =>
+                    form.setFieldValue("terms", event.currentTarget.checked)
+                  }
                 />
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  autoComplete="current-password"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setPassword(e.target.value);
-                  }}
-                />
-                <FormControlLabel
-                  control={<Checkbox value="remember" color="primary" />}
-                  label="Remember me"
-                />
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                >
-                  Sign In
-                </Button>
-                <Button 
-                fullWidth 
-                variant="contained" 
-                sx={{ mt: 3, mb: 2 }}
-                onClick={signInGoogle}
-                >
-                  Googleで登録
-                </Button>
-                <Grid container>
-                  <Grid item>
-                    <Link href="login" variant="body2">
-                      {"ログインの方はこちら"}
-                    </Link>
-                  </Grid>
-                </Grid>
-                <Copyright sx={{ mt: 5 }} />
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </ThemeProvider>
+              )}
+            </Group>
+
+            {type === "LogIn" && (
+              <Checkbox label="ログイン状態を記憶する" mt="xl" size="md" />
+            )}
+
+            <Button
+              className="bg-primary-blue"
+              fullWidth
+              mt="xl"
+              size="md"
+              type="submit"
+            >
+              {upperFirst(type)}
+            </Button>
+
+            <Group position="apart" mt="xl">
+              <Anchor
+                component="button"
+                type="button"
+                color="gray"
+                onClick={() => toggle()}
+                size="xs"
+              >
+                {type === "SignUp"
+                  ? "すでにアカウントをお持ちですか？ ログイン"
+                  : "アカウントをお持ちではありませんか？ 新規登録"}
+              </Anchor>
+            </Group>
+          </form>
+        </Paper>
+      </div>
     </Header>
   );
 };
 
-export default SignUp;
+export default Signup;

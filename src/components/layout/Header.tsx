@@ -1,8 +1,9 @@
+import { signOut } from "firebase/auth";
 import Head from "next/head";
 import Link from "next/link";
 import { ReactNode, VFC } from "react";
+import { auth } from "../../firebase/firebaseConfig";
 // import { useAuthState } from "react-firebase-hooks/auth";
-// import { auth } from "src/firebase/firebase";
 
 type Props = {
   children: ReactNode;
@@ -26,6 +27,7 @@ export const Header: VFC<Props> = ({ title, children }) => {
           <Link href="/signup">
             <a className="text-3xl cursor-pointer">SignUp</a>
           </Link>
+          <button onClick={() => signOut(auth)}>LogOut</button>
 
           {/* {user ? (
             <div>
